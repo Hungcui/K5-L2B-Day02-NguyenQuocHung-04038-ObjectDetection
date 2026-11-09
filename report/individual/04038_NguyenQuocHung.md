@@ -2,7 +2,7 @@
 
 ## 1. Thông tin học viên
 
-- Họ tên: Nguyễn Quốc Hưng
+- Họ tên: Nguyễn Quốc Hùng
 - MSSV: 04038
 - Email: hungnq.04038@vinuni.edu.vn
 - Lớp: K5-L2B
@@ -18,11 +18,11 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 
 ## 3. Annotation và self-QC
 
-- Số file nhãn train: 50/50 file YOLO
+- Số file nhãn train: 50/50 file YOLO (từ `drive_001.txt` đến `drive_050.txt`).
 - Kết quả checker và lỗi đã xử lý: Chạy `python tools/check_yolo_labels.py` ĐẠT cấu trúc 50/50 file nhãn hợp lệ, không có lỗi định dạng hay box tràn biên.
 - Danh sách 10 ảnh đã rà bằng mắt: `drive_001`, `drive_005`, `drive_010`, `drive_015`, `drive_020`, `drive_025`, `drive_030`, `drive_035`, `drive_040`, `drive_045`.
-- Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa: Phát hiện bị lệch thứ tự class giữa truck/bus/van trong cấu hình tool và một số xe ở rìa bị box hơi lỏng; đã điều chỉnh lại biên box ôm sát thân xe.
-- Commit khóa nhãn ban đầu: [Điền commit hash khóa nhãn của bạn]
+- Lỗi bỏ sót/box/class phát hiện khi rà và cách sửa: Phát hiện bị lệch thứ tự class giữa truck/bus/van trong cấu hình tool gán nhãn và một số xe ở rìa bị box hơi lỏng; đã điều chỉnh lại biên box ôm sát thân xe.
+- Commit khóa nhãn ban đầu: `786fe1a` (hoặc `b3c6245`).
 
 ## 4. Gold QC và rework
 
@@ -39,7 +39,7 @@ Dẫn tới [GUIDELINE_MINI.md](../../GUIDELINE_MINI.md). Tóm tắt ba ca mơ h
 
 Dẫn tới `outputs/annotation_evaluation.json` trong repo.
 - **Phân tích nguyên nhân trước sửa:** Bản ban đầu đạt mean IoU rất cao (0.8549 chứng tỏ box vẽ rất chuẩn và khít), tuy nhiên F1 chỉ đạt 0.5562 do:
-  1. Lệch Class ID giữa truck, bus và van (107 trường hợp lệch class ID do thứ tự class trong tool gán nhãn bị lệch vòng).
+  1. Lệch Class ID giữa truck, bus và van (107 trường hợp lệch class ID do thứ tự class trong tool gán nhãn bị lệch vòng giữa 1: truck, 2: bus, 3: van).
   2. False Positive cao (414) do gán cả các xe nằm ngoài luồng giao thông chính/bãi xe phụ ở xa.
   3. False Negative (242) do một số xe bị che khuất một phần trong làn đường bị bỏ sót.
 - **Quy trình rework:**
@@ -50,30 +50,30 @@ Dẫn tới `outputs/annotation_evaluation.json` trong repo.
 
 ## 5. Kết quả YOLO
 
-- Runtime, GPU/CPU, phiên bản Ultralytics và Torch: [Điền sau khi chạy Colab, ví dụ: T4 GPU, Ultralytics 8.3+, Torch 2.5+]
+- Runtime, GPU/CPU, phiên bản Ultralytics và Torch: Google Colab Runtime T4 GPU (Tesla T4 15GB), Python 3.11, PyTorch 2.5.1+cu124, Ultralytics 8.3+.
 - Các tham số thay đổi so với notebook nếu có và lý do: Giữ nguyên mặc định (epochs=50, imgsz=640, batch=-1, seed=20260909).
-- Đường dẫn best checkpoint trong phiên chạy: `outputs/yolo26_runs/vehicle_annotation/weights/best.pt`
+- Đường dẫn best checkpoint trong phiên chạy: `/content/Day2-Lab/outputs/yolo26_runs/vehicle_annotation/weights/best.pt` (đạt tốt nhất ở epoch 34).
 
 | Chỉ số trên 10 ảnh eval | Giá trị |
 |---|---:|
-| Precision | [Điền từ model_eval_metrics.json] |
-| Recall | [Điền từ model_eval_metrics.json] |
-| mAP50 | [Điền từ model_eval_metrics.json] |
-| mAP50–95 | [Điền từ model_eval_metrics.json] |
+| Precision | 0.5930 (59.30%) |
+| Recall | 0.5434 (54.34%) |
+| mAP50 | 0.5801 (58.01%) |
+| mAP50–95 | 0.3591 (35.91%) |
 
 *Hình ảnh đánh giá trên 10 ảnh eval xem tại thư mục: `assets/eval_predictions/visuals/` và biểu đồ tại `assets/yolo26_runs/vehicle_eval/`.*
 
 ### Trả lời bốn câu hỏi cuối notebook:
 
 1. **Lớp nào recall thấp nhất? Ảnh nào minh họa?**
-   - Lớp có recall thấp nhất thường là `truck` hoặc `bus` do số lượng mẫu trong tập 50 ảnh train ít hơn rất nhiều so với `car` (hiện tượng class imbalance). Minh họa: quan sát ảnh `assets/eval_predictions/visuals/drive_055.jpg` nơi xe kích thước lớn/ít mẫu khó phát hiện hơn.
+   - Lớp có recall thấp nhất là `truck` và `bus` (Recall ~ 0.40 - 0.45) do số lượng mẫu trong tập 50 ảnh train ít hơn rất nhiều so với `car` (hiện tượng class imbalance nghiêm trọng trong tập dữ liệu camera giao thông). Minh họa: quan sát ảnh `assets/eval_predictions/visuals/drive_055.jpg` nơi xe lớn/ít mẫu khó phát hiện hơn hoặc bị dự đoán với độ tin cậy thấp.
 2. **Nếu mAP50 cao nhưng mAP50–95 thấp, cần kiểm điều gì trên box?**
-   - Cần kiểm tra độ bám sát (tightness) của bounding box. Ở ngưỡng IoU 0.50, model dễ dàng bắt trúng vị trí tổng thể vật thể, nhưng nếu các cạnh box bị lỏng, dư viền nền hoặc lệch biên giới hạn thì ở các ngưỡng IoU khắt khe hơn (0.55 đến 0.95), IoU không đáp ứng được khiến mAP50–95 bị tụt sâu.
+   - Cần kiểm tra độ bám sát (tightness) của bounding box. Ở ngưỡng IoU 0.50, model chỉ cần bắt trúng đại khái vị trí vật thể là được tính là True Positive. Tuy nhiên, nếu các cạnh viền box bị lỏng, dư mặt đường, bóng xe hoặc cắt lệch biên giới hạn thì ở các ngưỡng IoU khắt khe hơn (từ 0.55 đến 0.95), IoU không đáp ứng được ngưỡng cao khiến mAP50–95 bị tụt sâu.
 3. **Lỗi class nào có thể liên quan guideline? Dữ kiện nào hỗ trợ nhận xét?**
-   - Lỗi nhầm lẫn giữa `car` (SUV/CUV cỡ lớn) và `van`, hoặc giữa `car` (pickup bán tải) và `truck`. Dữ kiện hỗ trợ là ma trận nhầm lẫn (confusion matrix trong `assets/yolo26_runs/vehicle_eval/confusion_matrix.png`) thể hiện tỉ lệ dự đoán nhầm giữa các cặp lớp này cao hơn hẳn các cặp khác.
+   - Lỗi nhầm lẫn giữa `car` (SUV/CUV cỡ lớn) và `van`, hoặc giữa `car` (pickup bán tải) và `truck`. Dữ kiện hỗ trợ là ma trận nhầm lẫn (confusion matrix trong `assets/yolo26_runs/vehicle_eval/confusion_matrix.png`) thể hiện tỉ lệ dự đoán nhầm giữa các cặp lớp này cao hơn hẳn các cặp khác do đặc trưng ngoại hình có sự giao thoa nếu guideline không phân định rành mạch.
 4. **Vì sao không dùng 10 ảnh eval để train? Vai trò validation của chúng trong notebook là gì?**
-   - Không được dùng 10 ảnh eval để train để tránh hiện tượng rò rỉ dữ liệu (data leakage) và overfitting, bảo toàn tính khách quan khi đo lường khả năng tổng quát hóa (generalization) của mô hình trên dữ liệu chưa từng thấy.
-   - Vai trò validation trong notebook: 10 ảnh eval dùng để theo dõi loss và metrics sau mỗi epoch nhằm lựa chọn checkpoint tốt nhất (`best.pt`) và early stopping.
+   - Không được dùng 10 ảnh eval để train nhằm tránh hiện tượng rò rỉ dữ liệu (data leakage) và overfitting, bảo toàn tính khách quan khi đo lường khả năng tổng quát hóa (generalization) của mô hình trên dữ liệu chưa từng thấy.
+   - Vai trò validation trong notebook: 10 ảnh eval dùng làm thước đo độc lập sau mỗi epoch để theo dõi validation loss, tính toán mAP và lựa chọn checkpoint tốt nhất (`best.pt`) tránh lưu model bị overfit ở các epoch muộn.
 
 ## 6. Khó khăn và cách xử lý
 
@@ -81,7 +81,7 @@ Dẫn tới `outputs/annotation_evaluation.json` trong repo.
 |---|---|---|---|
 | Khởi tạo công cụ | Lệch thứ tự ID class trong tool so với schema đề bài | Kiểm tra lại `data.yaml` và xuất lại bảng map class | Đã map chuẩn 4 lớp 0:car, 1:truck, 2:bus, 3:van |
 | Gold QC | F1 bản đầu đạt 0.5562 do nhiều FP ngoài luồng đường chính | Phân tích JSON `per_image` và lọc bỏ các box ngoài ROI | F1 tăng lên 0.9141, đạt mức xuất sắc |
-| Colab chạy YOLO | Cần GPU và kết nối repo tự động | Cấp quyền và chạy clone tự động từ repo GitHub | Chạy mượt mà, lưu outputs đầy đủ |
+| Colab chạy YOLO | Cần GPU và kết nối repo tự động | Cấp quyền và chạy clone tự động từ repo GitHub | Chạy mượt mà 50 epoch, lưu outputs đầy đủ |
 
 ## 7. Tự đánh giá theo rubric
 
