@@ -7,7 +7,7 @@
 - Email: hungnq.04038@vinuni.edu.vn
 - Lớp: K5-L2B
 - Link repo bài làm: https://github.com/Hungcui/K5-L2B-Day02-NguyenQuocHung-04038-ObjectDetection
-- Link Colab đã chạy: [Dán link Colab của bạn vào đây]
+- Link Colab đã chạy: https://colab.research.google.com/drive/111oMOabBidZRgH6F-82T-jStlQt9cty8?usp=sharing
 
 ## 2. Schema và mini guideline
 
