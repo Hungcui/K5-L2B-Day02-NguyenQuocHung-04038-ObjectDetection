@@ -2,7 +2,7 @@
 
 ## 1. Thông tin học viên
 
-- Họ tên: Nguyễn Quốc Hùng
+- Họ tên: Nguyễn Quốc Hưng
 - MSSV: 04038
 - Email: hungnq.04038@vinuni.edu.vn
 - Lớp: K5-L2B
